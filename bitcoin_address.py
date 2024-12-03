@@ -6,6 +6,10 @@ from bitcoinlib.keys import HDKey
 from bitcoinlib.transactions import Transaction
 from bitcoinlib.wallets import Wallet
 
+from bitcoinlib.transactions import Transaction, Input, Output
+from bitcoinlib.keys import HDKey
+from bitcoinlib.services.services import Service
+
 def generate_bitcoin_address_with_pattern(start_pattern="", end_pattern=""):
     while True:
         # Генерируем случайный приватный ключ
@@ -34,6 +38,13 @@ def get_balance_bitcoin(address):
         return None
 
 def send_bitcoin(private_key, recipient_address, amount_btc):
+    """
+    Транзакция с созданием временного кошелька.
+    
+    Временный кошелек существует только в памяти во время выполнения функции:
+    - Приватный ключ хранится внутри объекта Wallet и автоматически удаляется при завершении работы функции.
+    - Удаление кошелька (wallet.delete()) предотвращает случайное сохранение ключей в локальном хранилище или кэше.
+    """
     # Создаем временный кошелек с импортом приватного ключа
     wallet = Wallet.create("TempWallet", keys=private_key, network='bitcoin')
 
@@ -43,14 +54,30 @@ def send_bitcoin(private_key, recipient_address, amount_btc):
     print(f"Транзакция отправлена! Хэш: {tx.txid}")
     wallet.delete()  # Удаляем временный кошелек для безопасности
 
-def send_btc_on_network():
-     # Создание или импорт кошелька
-    wallet = Wallet.create('MyBitcoinWallet', keys='ВАШ_ПРИВАТНЫЙ_КЛЮЧ')
-    
-    # Отправка средств
-    tx = wallet.send_to('АДРЕС_ПОЛУЧАТЕЛЯ', 0.001, network='bitcoin', fee=1000)
+def send_bitcoin_directly(private_key, recipient_address, amount_btc):
+    service = Service(network='bitcoin')  # Подключение к сети Bitcoin
 
-    print(f"Транзакция отправлена! Хэш: {tx.txid}")
+    # Получаем адрес и непотраченные выходы (UTXO)
+    sender_key = HDKey(private_key)
+    sender_address = sender_key.address()
+    utxos = service.utxos(sender_address)
+
+    # Создаем транзакцию
+    tx = Transaction(network='bitcoin')
+
+    # Добавляем все UTXO в качестве входов
+    for utxo in utxos:
+        tx.add_input(Input(utxo['txid'], utxo['output_index'], value=utxo['value']))
+
+    # Добавляем выход на адрес получателя
+    tx.add_output(Output.to_recipient(recipient_address, amount_btc * 1e8))
+
+    # Подписываем транзакцию приватным ключом
+    tx.sign(sender_key)
+
+    # Отправляем транзакцию в сеть
+    tx_id = tx.send()
+    print(f"Транзакция отправлена! Хэш: {tx_id}")
 
 if __name__ == "__main__":
       generate_bitcoin_address_with_pattern(start_pattern="1abc", end_pattern="xyz")
