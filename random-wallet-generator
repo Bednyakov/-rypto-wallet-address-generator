@@ -1,0 +1,56 @@
+import os
+import hashlib
+import base58
+from ecdsa import SigningKey, SECP256k1
+
+from eth_keys import keys
+from eth_utils import keccak, to_checksum_address
+
+def create_bitcoin_wallet():
+    # Генерация случайного приватного ключа (32 байта)
+    private_key_bytes = os.urandom(32)
+    private_key = SigningKey.from_string(private_key_bytes, curve=SECP256k1)
+
+    # Получаем публичный ключ
+    public_key = private_key.get_verifying_key().to_string()
+
+    # Хэшируем публичный ключ: сначала SHA-256, затем RIPEMD-160
+    sha256_public_key = hashlib.sha256(public_key).digest()
+    ripemd160_public_key = hashlib.new('ripemd160', sha256_public_key).digest()
+
+    # Добавляем версионный байт (0x00 для Mainnet Bitcoin) и контрольную сумму
+    versioned_payload = b'\x00' + ripemd160_public_key
+    checksum = hashlib.sha256(hashlib.sha256(versioned_payload).digest()).digest()[:4]
+    address_bytes = versioned_payload + checksum
+
+    # Конвертируем в формат Base58
+    bitcoin_address = base58.b58encode(address_bytes).decode()
+
+    # Выводим адрес и приватный ключ
+    print(f"Bitcoin адрес: {bitcoin_address}")
+    print(f"Приватный ключ (hex): {private_key.to_string().hex()}")
+    return bitcoin_address, private_key.to_string().hex()
+
+# Создаем кошелек
+create_bitcoin_wallet()
+
+
+def create_ethereum_wallet():
+    # Генерация случайного приватного ключа (32 байта)
+    private_key_bytes = os.urandom(32)
+    private_key = keys.PrivateKey(private_key_bytes)
+
+    # Публичный ключ (64 байта, x и y координаты объединены)
+    public_key = private_key.public_key
+
+    # Генерация Ethereum-адреса (последние 20 байт хэша публичного ключа)
+    address_bytes = keccak(public_key.to_bytes())[12:]  # 12 последних байт отброшены
+    address = to_checksum_address("0x" + address_bytes.hex())
+
+    # Выводим адрес и приватный ключ
+    print(f"Ethereum адрес: {address}")
+    print(f"Приватный ключ (hex): {private_key.to_hex()}")
+    return address, private_key.to_hex()
+
+# Создаем кошелек
+create_ethereum_wallet()
