@@ -1,3 +1,4 @@
 bitcoinlib
 eth-keys 
 eth-utils
+web3
