@@ -26,12 +26,18 @@ infura_url = "https://mainnet.infura.io/v3/YOUR_INFURA_PROJECT_ID"
 web3 = Web3(Web3.HTTPProvider(infura_url))
 
 def check_balance(address):
+    """
+    Проверка баланса кошелька.
+    """
     balance = web3.eth.get_balance(address)
     print(f"Баланс адреса {address}: {web3.from_wei(balance, 'ether')} ETH")
     return balance
 
 
 def send_ether(private_key, to_address, amount_in_ether):
+    """
+    Отправка транзакции с кошелька.
+    """
     # Получаем адрес отправителя из приватного ключа
     sender_address = keys.PrivateKey(decode_hex(private_key)).public_key.to_checksum_address()
 
@@ -53,6 +59,9 @@ def send_ether(private_key, to_address, amount_in_ether):
     print(f"Транзакция отправлена! Хэш транзакции: {web3.to_hex(tx_hash)}")
 
 def sign_message(private_key, message):
+    """
+    Подписание сообщений
+    """
     message = encode_defunct(text=message)
     signed_message = web3.eth.account.sign_message(message, private_key)
     print(f"Подписанное сообщение: {signed_message.signature.hex()}")
