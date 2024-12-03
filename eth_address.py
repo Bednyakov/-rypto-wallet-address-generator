@@ -1,6 +1,7 @@
 from eth_keys import keys
+from eth_account.messages import encode_defunct
 from eth_utils import decode_hex
-
+from web3 import Web3
 import os
 
 def generate_ethereum_address_with_pattern(start_pattern="", end_pattern=""):
@@ -18,5 +19,56 @@ def generate_ethereum_address_with_pattern(start_pattern="", end_pattern=""):
             print(f"Приватный ключ: {private_key}")
             return address, private_key
 
+
+
+# Подключаемся к провайдеру (например, Infura)
+infura_url = "https://mainnet.infura.io/v3/YOUR_INFURA_PROJECT_ID"
+web3 = Web3(Web3.HTTPProvider(infura_url))
+
+def check_balance(address):
+    balance = web3.eth.get_balance(address)
+    print(f"Баланс адреса {address}: {web3.from_wei(balance, 'ether')} ETH")
+    return balance
+
+
+def send_ether(private_key, to_address, amount_in_ether):
+    # Получаем адрес отправителя из приватного ключа
+    sender_address = keys.PrivateKey(decode_hex(private_key)).public_key.to_checksum_address()
+
+    # Создаем транзакцию
+    transaction = {
+        'to': to_address,
+        'value': web3.to_wei(amount_in_ether, 'ether'),
+        'gas': 21000,
+        'gasPrice': web3.to_wei('30', 'gwei'),
+        'nonce': web3.eth.getTransactionCount(sender_address),
+        'chainId': 1  # Mainnet
+    }
+
+    # Подписываем транзакцию приватным ключом
+    signed_transaction = web3.eth.account.sign_transaction(transaction, private_key)
+
+    # Отправляем транзакцию
+    tx_hash = web3.eth.send_raw_transaction(signed_transaction.rawTransaction)
+    print(f"Транзакция отправлена! Хэш транзакции: {web3.to_hex(tx_hash)}")
+
+def sign_message(private_key, message):
+    message = encode_defunct(text=message)
+    signed_message = web3.eth.account.sign_message(message, private_key)
+    print(f"Подписанное сообщение: {signed_message.signature.hex()}")
+    return signed_message
+
+
+
 if __name__ == "__main__":
-    generate_ethereum_address_with_pattern(start_pattern="abc", end_pattern="xyz")
+
+    # Проверяем баланс адреса
+    address, private_key = generate_ethereum_address_with_pattern("abc", "xyz")
+    check_balance(address)
+
+    # Пример отправки 0.01 ETH
+    recipient_address = "0xАдресПолучателя"
+    send_ether(private_key.to_hex(), recipient_address, 0.01)
+
+    # Подпишем сообщение
+    sign_message(private_key.to_hex(), "Я подтверждаю владение этим адресом!")
