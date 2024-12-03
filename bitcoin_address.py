@@ -43,5 +43,14 @@ def send_bitcoin(private_key, recipient_address, amount_btc):
     print(f"Транзакция отправлена! Хэш: {tx.txid}")
     wallet.delete()  # Удаляем временный кошелек для безопасности
 
+def send_btc_on_network():
+     # Создание или импорт кошелька
+    wallet = Wallet.create('MyBitcoinWallet', keys='ВАШ_ПРИВАТНЫЙ_КЛЮЧ')
+    
+    # Отправка средств
+    tx = wallet.send_to('АДРЕС_ПОЛУЧАТЕЛЯ', 0.001, network='bitcoin', fee=1000)
+
+    print(f"Транзакция отправлена! Хэш: {tx.txid}")
+
 if __name__ == "__main__":
       generate_bitcoin_address_with_pattern(start_pattern="1abc", end_pattern="xyz")
