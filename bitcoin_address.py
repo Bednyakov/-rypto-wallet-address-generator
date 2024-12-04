@@ -1,29 +1,36 @@
 import os
-import hashlib
-import base58
 import requests
 from bitcoinlib.keys import HDKey
-from bitcoinlib.transactions import Transaction
-from bitcoinlib.wallets import Wallet
-
 from bitcoinlib.transactions import Transaction, Input, Output
-from bitcoinlib.keys import HDKey
+from bitcoinlib.wallets import Wallet
 from bitcoinlib.services.services import Service
 
-def generate_bitcoin_address_with_pattern(start_pattern="", end_pattern=""):
+
+def generate_bitcoin_address_segwit(start_pattern="", end_pattern=""):
+    """
+    Генерация сегментированного кошелька Native SegWit (Bech32): 
+    Эти адреса представляют собой более эффективную версию, 
+    которая использует меньше данных для транзакций 
+    и имеет более низкие комиссии по сравнению 
+    с более старыми форматами.
+    Адреса SegWit начинаются с "bc1"
+    """
     while True:
         # Генерируем случайный приватный ключ
-        private_key = HDKey().private_byte.hex()
+        private_key_bytes = os.urandom(32)  # Генерация 32 байт для приватного ключа
+        wallet_key = HDKey(private_key_bytes)
+        # wallet_key = HDKey.from_private_key(private_key_bytes, network='bitcoin')
 
         # Получаем адрес на основе приватного ключа
-        wallet = HDKey.from_private_key(private_key)
-        address = wallet.address()
+        address = wallet_key.address()
+        print(address)
 
         # Проверяем, начинается ли адрес с заданного шаблона
-        if address.startswith(start_pattern) and address.endswith(end_pattern):
+        if address.startswith(f"bc1q{start_pattern}") and address.endswith(end_pattern):
             print(f"Найден адрес: {address}")
-            print(f"Приватный ключ: {private_key}")
-            return address, private_key
+            print(f"Приватный ключ (HEX): {private_key_bytes.hex()}")
+            return address, private_key_bytes.hex()
+
 
 def get_balance_bitcoin(address):
     url = f"https://blockchain.info/q/addressbalance/{address}"
@@ -80,4 +87,5 @@ def send_bitcoin_directly(private_key, recipient_address, amount_btc):
     print(f"Транзакция отправлена! Хэш: {tx_id}")
 
 if __name__ == "__main__":
-      generate_bitcoin_address_with_pattern(start_pattern="1abc", end_pattern="xyz")
+      address, private_key = generate_bitcoin_address_segwit(start_pattern="", end_pattern="artem")
+      get_balance_bitcoin(address)
