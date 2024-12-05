@@ -25,12 +25,13 @@ def generate_bitcoin_address_segwit(start_pattern="", end_pattern=""):
 
         # Получаем адрес на основе приватного ключа
         address = wallet_key.address()
-        print(address)
+        print(address, end='\r')
 
         # Проверяем, начинается ли адрес с заданного шаблона
         if address.startswith(f"bc1q{start_pattern}") and address.endswith(end_pattern):
             print(f"Найден адрес: {address}")
             print(f"Приватный ключ (HEX): {private_key_bytes.hex()}")
+            get_balance_bitcoin(address)
             return address, private_key_bytes.hex()
         
 
@@ -46,12 +47,12 @@ def parallel_address_search(start_pattern="", end_pattern=""):
         futures = [executor.submit(generate_bitcoin_address_segwit, start_pattern, end_pattern) for _ in range(num_cores)]
 
         # Ждем завершения любой из задач
-        for future in as_completed(futures):
-            if future.result():
+        for future in as_completed(futures, timeout=1):
+            result = future.result()
+            if result:
                 # Если одна из задач завершилась успешно, отменяем остальные
                 executor.shutdown(wait=False, cancel_futures=True)
-                print("Адрес найден!")
-                return future.result()
+                return result
 
 
 def get_balance_bitcoin(address):
@@ -60,10 +61,10 @@ def get_balance_bitcoin(address):
     if response.status_code == 200:
         balance_satoshi = int(response.text)
         balance_btc = balance_satoshi / 1e8
-        print(f"Баланс {address}: {balance_btc} BTC")
+        print(f"Баланс {address}: {balance_btc} BTC\n")
         return balance_btc
     else:
-        print("Ошибка при получении баланса")
+        print("Ошибка при получении баланса\n")
         return None
 
 def send_bitcoin(private_key, recipient_address, amount_btc):
@@ -108,11 +109,6 @@ def send_bitcoin_directly(private_key, recipient_address, amount_btc):
     tx_id = tx.send()
     print(f"Транзакция отправлена! Хэш: {tx_id}")
 
+
 if __name__ == "__main__":
-    result = parallel_address_search(start_pattern="", end_pattern="artem")
-    if result:
-        address, private_key = result
-    print(f"Найденный адрес: {address}")
-    print(f"Приватный ключ: {private_key}")
-#   address, private_key = generate_bitcoin_address_segwit(start_pattern="", end_pattern="artem")
-    get_balance_bitcoin(address)
+    parallel_address_search(start_pattern="", end_pattern="ema")
