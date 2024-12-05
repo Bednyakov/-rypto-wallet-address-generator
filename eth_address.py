@@ -12,11 +12,13 @@ def generate_ethereum_address_with_pattern(start_pattern="", end_pattern=""):
 
         # Получаем адрес на основе приватного ключа
         address = private_key.public_key.to_checksum_address()
+        print(address, end='\r')
 
         # Проверяем шаблон начала и конца
         if address[2:].startswith(start_pattern) and address[2:].endswith(end_pattern):
             print(f"Найден адрес: {address}")
             print(f"Приватный ключ: {private_key}")
+            check_balance(address)
             return address, private_key
 
 
@@ -30,7 +32,7 @@ def check_balance(address):
     Проверка баланса кошелька.
     """
     balance = web3.eth.get_balance(address)
-    print(f"Баланс адреса {address}: {web3.from_wei(balance, 'ether')} ETH")
+    print(f"Баланс адреса {address}: {web3.from_wei(balance, 'ether')} ETH\n")
     return balance
 
 
@@ -72,12 +74,12 @@ def sign_message(private_key, message):
 if __name__ == "__main__":
 
     # Проверяем баланс адреса
-    address, private_key = generate_ethereum_address_with_pattern("abc", "xyz")
+    address, private_key = generate_ethereum_address_with_pattern("a", "z")
     check_balance(address)
 
-    # Пример отправки 0.01 ETH
-    recipient_address = "0xАдресПолучателя"
-    send_ether(private_key.to_hex(), recipient_address, 0.01)
+    # # Пример отправки 0.01 ETH
+    # recipient_address = "0xАдресПолучателя"
+    # send_ether(private_key.to_hex(), recipient_address, 0.01)
 
-    # Подпишем сообщение
-    sign_message(private_key.to_hex(), "Я подтверждаю владение этим адресом!")
+    # # Подпишем сообщение
+    # sign_message(private_key.to_hex(), "Я подтверждаю владение этим адресом!")
