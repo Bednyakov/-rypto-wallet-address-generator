@@ -1,28 +1,44 @@
 import os
-import ecdsa
 import hashlib
+import ecdsa
 import base58
+from Crypto.Hash import RIPEMD160
+
+
+def ripemd160(data: bytes) -> bytes:
+    """
+    Вычисляет RIPEMD-160 хэш для данных с использованием pycryptodome.
+    """
+    h = RIPEMD160.new()
+    h.update(data)
+    return h.digest()
+
 
 def generate_bitcoin_address_p2pkh():
-    # Генерация случайного приватного ключа
+    """
+    Генерирует Bitcoin-адрес формата P2PKH и соответствующий приватный ключ.
+
+    :return: Кортеж из приватного ключа (hex) и Bitcoin-адреса (Base58)
+    """
+    # Генерация случайного приватного ключа (32 байта)
     private_key = os.urandom(32)
     
-    # Генерация публичного ключа на основе приватного
+    # Генерация публичного ключа на основе приватного ключа
     sk = ecdsa.SigningKey.from_string(private_key, curve=ecdsa.SECP256k1)
     vk = sk.get_verifying_key()
-    public_key = b'\x04' + vk.to_string()
+    public_key = b'\x04' + vk.to_string()  # Префикс \x04 для некомпрессированного публичного ключа
 
     # SHA-256 хеш публичного ключа
     sha256_bpk = hashlib.sha256(public_key).digest()
 
     # RIPEMD-160 хеш SHA-256 хеша публичного ключа
-    ripemd160_bpk = hashlib.new('ripemd160', sha256_bpk).digest()
+    ripemd160_bpk = ripemd160(sha256_bpk)
 
-    # Добавление сети байта (0x00 для основной сети Bitcoin)
+    # Добавление сетевого байта (0x00 для основной сети Bitcoin)
     network_byte = b'\x00'
     network_public_key = network_byte + ripemd160_bpk
 
-    # SHA-256 дважды (Double SHA-256)
+    # Double SHA-256 для контрольной суммы
     sha256_nbpk = hashlib.sha256(network_public_key).digest()
     sha256_2_nbpk = hashlib.sha256(sha256_nbpk).digest()
 
@@ -37,7 +53,9 @@ def generate_bitcoin_address_p2pkh():
     
     return private_key.hex(), address.decode()
 
-# Пример использования функции
-private_key, address = generate_bitcoin_address_p2pkh()
-print(f"Приватный ключ: {private_key}")
-print(f"Адрес Bitcoin: {address}")
+# Пример использования
+if __name__ == "__main__":
+    private_key, bitcoin_address = generate_bitcoin_address_p2pkh()
+    print(f"Приватный ключ: {private_key}")
+    print(f"Bitcoin-адрес: {bitcoin_address}")
+

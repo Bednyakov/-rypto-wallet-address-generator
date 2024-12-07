@@ -22,4 +22,4 @@ def parallel_address_search(calculator, start_pattern="", end_pattern=""):
                 return result
             
 if __name__ == "__main__":
-    parallel_address_search(generate_ethereum_address_with_pattern, start_pattern="33", end_pattern="a")
+    parallel_address_search(generate_ethereum_address_with_pattern, start_pattern="E4", end_pattern="e4")

@@ -2,3 +2,8 @@ bitcoinlib
 eth-keys 
 eth-utils
 web3
+pyinquirer
+base58
+ecdsa
+pycryptodome
+python-dotenv
