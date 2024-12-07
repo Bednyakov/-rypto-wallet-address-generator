@@ -2,8 +2,8 @@ from eth_keys import keys
 from dotenv import load_dotenv
 import os
 
-from eth_service import check_balance, send_ether, sign_message, check_all_balances
-from eth_contracts import token_contracts
+from .eth_service import check_balance, send_ether, sign_message, check_all_balances
+from .eth_contracts import token_contracts
 
 load_dotenv()
 rpc_url = os.getenv("RPC_URL")
@@ -16,12 +16,18 @@ def generate_ethereum_address_with_pattern(start_pattern="", end_pattern=""):
 
         # Получаем адрес на основе приватного ключа
         address = private_key.public_key.to_checksum_address()
-        print(address, end='\r')
+        print(f"Поиск по маске 0x{start_pattern}...{end_pattern}: {address}", end='\r')
 
         # Проверяем шаблон начала и конца
         if address[2:].startswith(start_pattern) and address[2:].endswith(end_pattern):
-            print(f"Найден адрес: {address}")
-            print(f"Приватный ключ: {private_key}")
+            print(f"""\
+===============================
+Найден адрес: {address}
+
+Приватный ключ: {private_key}
+[!] Приватный ключ — это единственный способ получить доступ к вашему кошельку. Безопасное хранение ключа критически важно.
+===============================
+\n""")
             return address, private_key
 
 
@@ -32,17 +38,15 @@ def all_balances(eth_address: str, token_contracts: list, rpc_url: str) -> None:
         print(f"{token}: {balance}")
 
 
-def calculator(start_pattern: str, end_pattern: str):
-    address, private_key = generate_ethereum_address_with_pattern()
+def eth_calculator(start_pattern: str, end_pattern: str):
+    address, private_key = generate_ethereum_address_with_pattern(start_pattern, end_pattern)
     if rpc_url:
         all_balances(eth_address=address, token_contracts=token_contracts, rpc_url=rpc_url)
         return address, private_key
-    print("Для проверки баланса добавьте в .env провайдера в виде: RPC_URL=https://mainnet.infura.io/v3/... ")
-    return address, private_key
 
 
 if __name__ == "__main__":
-    calculator("", "")
+    eth_calculator("", "")
 
 
     # Проверяем баланс адреса

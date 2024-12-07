@@ -1,0 +1,1 @@
+from .eth_address_gen import generate_ethereum_address_with_pattern

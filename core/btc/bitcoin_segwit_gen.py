@@ -1,8 +1,6 @@
 import os
 from bitcoinlib.keys import HDKey
 
-from bitcoin_services import get_balance_bitcoin
-
 
 def generate_bitcoin_address_segwit(start_pattern="", end_pattern=""):
     """
@@ -21,11 +19,21 @@ def generate_bitcoin_address_segwit(start_pattern="", end_pattern=""):
 
         # Получаем адрес на основе приватного ключа
         address = wallet_key.address()
-        print(address, end='\r')
+        print(f"Поиск по маске bc1q{start_pattern}...{end_pattern}: {address}", end='\r')
 
         # Проверяем, начинается ли адрес с заданного шаблона
         if address.startswith(f"bc1q{start_pattern}") and address.endswith(end_pattern):
-            print(f"Найден адрес: {address}")
-            print(f"Приватный ключ (HEX): {private_key_bytes.hex()}")
-            get_balance_bitcoin(address)
+            print(f"""\
+===============================
+Найден адрес: {address}
+
+Приватный ключ (HEX): {private_key_bytes.hex()}
+[!] Приватный ключ — это единственный способ получить доступ к вашему кошельку. Безопасное хранение ключа критически важно.
+===============================
+\n""")
+
             return address, private_key_bytes.hex()
+        
+
+if __name__ == "__main__":
+    generate_bitcoin_address_segwit()

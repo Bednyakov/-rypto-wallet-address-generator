@@ -1,0 +1,3 @@
+from .bitcoin_p2pkh_gen import generate_bitcoin_address_p2pkh
+from .bitcoin_p2sh_gen import generate_bitcoin_address_p2sh
+from .bitcoin_segwit_gen import generate_bitcoin_address_segwit
