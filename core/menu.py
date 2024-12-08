@@ -1,5 +1,6 @@
 import inquirer
 
+from core.wallet_info import btc_text, eth_text, tron_text
 from core.btc import generate_bitcoin_address_p2pkh
 from core.btc import generate_bitcoin_address_p2sh
 from core.btc import generate_bitcoin_address_segwit
@@ -39,3 +40,8 @@ def enter_patterns():
     start_pattern = input("Введите префикс адреса и/или нажмите Enter: ")
     end_pattern = input("Введите суффикс адреса и/или нажмите Enter: ")
     return start_pattern, end_pattern
+
+def addresses_info():
+    print(btc_text)
+    print(eth_text)
+    print(tron_text)

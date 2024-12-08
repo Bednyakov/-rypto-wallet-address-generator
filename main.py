@@ -1,8 +1,7 @@
 from sys import exit as exit_the_program
 import time
 
-from core.menu import select_option, options, enter_patterns, calculators
-from core.wallet_info import btc_text, eth_text
+from core.menu import select_option, options, enter_patterns, calculators, addresses_info
 from core.search_engine import parallel_address_search
 
 
@@ -13,8 +12,7 @@ def main():
                 exit_the_program()
 
         elif "Информация" in selected:
-            print(btc_text)
-            print(eth_text)
+            addresses_info()
             time.sleep(1)
 
         for key, value in calculators.items():
