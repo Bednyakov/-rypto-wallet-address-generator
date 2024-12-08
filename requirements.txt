@@ -7,3 +7,5 @@ base58
 ecdsa
 pycryptodome
 python-dotenv
+tronpy
+
