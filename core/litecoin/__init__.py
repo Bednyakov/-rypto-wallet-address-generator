@@ -1,0 +1,2 @@
+from .litecoin_gen import generate_litecoin_address
+from .segwit_gen import generate_segwit_litecoin_address

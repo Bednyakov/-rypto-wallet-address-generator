@@ -7,6 +7,7 @@ asn1crypto==1.5.1
 async-timeout==5.0.1
 attrs==24.2.0
 base58==2.1.1
+bech32==1.2.0
 bitarray==3.0.0
 bitcoinlib==0.7.0
 blessed==1.20.0

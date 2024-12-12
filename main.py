@@ -8,6 +8,7 @@ from core.search_engine import parallel_address_search
 def main():
     while True:
         selected = select_option(options)
+        print(selected)
         if "Выход" in selected:
                 exit_the_program()
 
@@ -16,9 +17,10 @@ def main():
             time.sleep(1)
 
         for key, value in calculators.items():
-            if key in selected:
+            if key in selected.split():
                 print("Учитывайте, чем больше символов в начале или конце адреса, тем дольше будет идти генерация.\n")
                 start_pattern, end_pattern = enter_patterns()
+                print(key)
                 if parallel_address_search(value, start_pattern, end_pattern):
                     exit_the_program()
 

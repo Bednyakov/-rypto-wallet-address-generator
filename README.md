@@ -99,3 +99,5 @@ pycryptodome
 python-dotenv
 
 tronpy
+
+bech32
